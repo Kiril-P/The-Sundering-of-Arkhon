@@ -1,0 +1,230 @@
+# Game Flow Document: Arkhon's Awakening
+
+## Introduction
+
+This document outlines the detailed gameplay flow, architecture, and interactions required to develop **Arkhon's Awakening**, a text-based adventure game in C.
+
+---
+
+## Player Progression & Architecture
+
+### Initial Gameplay Flow:
+
+**Start (Dungeon of Awakening):**
+
+* Player awakens without memories.
+* Interaction with Grizzik (Goblin companion), provides initial context.
+* Player retrieves **Mage’s Staff**.
+
+**Initial Options:**
+
+* Examine staff (lore introduction)
+* Talk with Grizzik (initial world-building)
+* Proceed out of the Dungeon
+
+---
+
+### Crossroads:
+
+* Player is presented two choices:
+
+  1. **Evil Castle (Blocked initially by forcefield)**
+
+     * Player is informed by Grizzik of barrier
+  2. **Village of Eldermoor** (accessible)
+
+---
+
+## Eldermoor Exploration:
+
+### Village Interactions:
+
+* Dialogue with villagers (reveals local lore)
+* Interaction with NPCs:
+
+  * Elder Maris (lore about Arkhon)
+  * Fiona (provides quests related to spells and lore)
+* Access key locations (Library, Mystical Shop, Direfang Dungeon)
+
+---
+
+### Library of Elders:
+
+* Player learns initial spells:
+
+  * **Flame Spark**
+  * **Shield of Dawn**
+* Lore reading: history of Arkhon’s split.
+
+---
+
+### Direfang Dungeon:
+
+* Accessible immediately, no prerequisites.
+* Mechanics:
+
+  * Room-by-room traversal, enemy encounters.
+  * Spellcasting mechanics: Input-based combat.
+* If player is unprepared (lacking spells from Library), the player encounters overwhelming enemies, resulting in death.
+* Rewards (upon successful completion):
+
+  * Scroll **Lightning Arc** (Offensive spell)
+  * Additional lore snippets.
+
+---
+
+### Whispering Grove:
+
+* Accessible immediately, no prerequisites.
+* Interaction mechanics: environmental puzzles and enemy encounters.
+* If player is unprepared (lacking suitable spells and strength), enemies and traps result in death.
+* Rewards (upon successful completion):
+
+  * Spell **Nature’s Embrace** (Healing)
+  * Visions revealing more of Arkhon’s past.
+
+---
+
+### Caverns of Echoes:
+
+* Accessible immediately, no prerequisites.
+* Complex puzzles, stronger enemies, and dangerous environmental hazards.
+* If player is unprepared (lacking advanced spells), lethal challenges result in death.
+* Rewards (upon successful completion):
+
+  * Spell **Shadow’s Bane** (Dispels forcefield around Evil Castle)
+  * Explicit lore revealing player's identity and nature of Arkhon the Blight.
+
+---
+
+## Final Confrontation – Evil Castle:
+
+### Entering the Castle:
+
+* Access granted post-**Shadow’s Bane** spell acquisition.
+
+### Encounter with Arkhon the Blight:
+
+* Dialogue initiation: Reveals villain's identity subtly.
+* Battle initiation mechanic:
+
+  * Structured dialogue concludes.
+  * Combat begins immediately after dialogue.
+
+### Final Battle Mechanics:
+
+* **Timed Spellcasting:**
+
+  * Prompt displayed with specific incantation.
+  * Player must accurately type incantation within a timed interval.
+
+#### Combat Flow:
+
+* **Player Attack Phase:**
+
+  * Prompt: Offensive spell incantation (e.g., "Fulmen Arcana").
+  * Success: Damages Arkhon the Blight.
+  * Failure: No damage, move to defense phase.
+
+* **Boss Attack Phase:**
+
+  * Prompt: Defensive spell incantation (e.g., "Aegis Lucis").
+  * Success: Block the attack completely.
+  * Failure: Player takes damage, reducing HP.
+
+* HP Tracking:
+
+  * Player's HP clearly displayed.
+  * Boss's HP managed internally and indicated descriptively.
+
+* **Death Scenario:**
+
+  * Player HP reaches zero:
+
+    * Display death message and narrative.
+    * Restart from last checkpoint (pre-boss).
+
+### Boss Defeat Scenario:
+
+* Standard ending:
+
+  * Arkhon the Blight is defeated, temporarily banished.
+  * Explicit narrative stating inevitable return.
+
+### Secret (True) Ending Conditions:
+
+* If all memory lore points are discovered:
+
+  * Additional dialogue triggers post-standard defeat.
+  * Final timed incantation prompt appears: **"Anima Unificare"**.
+
+#### True Ending Mechanics:
+
+* Success on final prompt:
+
+  * Merge Arkhon’s souls permanently.
+  * Display rewarding and conclusive narrative resolution.
+* Failure:
+
+  * Default to standard ending narrative.
+
+---
+
+## Technical Architecture (In C):
+
+### Suggested Structures & Functions:
+
+* **struct Player:** HP, Spellbook (array of learned spells), Progression flags.
+* **struct Enemy:** HP, Attack/Defense Mechanics.
+* **Spellcasting:**
+
+  * Input validation functions with timer (e.g., using `time.h` library).
+* **Combat System:**
+
+  * Functions for attack/defense spellcasting logic.
+  * Simple loop structure for turn-based management.
+* **Memory/Lore Management:**
+
+  * Flag-based system (integer/boolean flags indicating discovered lore).
+  * Function checking lore completion to unlock secret spell.
+
+### Example Function Pseudocode:
+
+```c
+int cast_spell(char *correct_spell, int time_limit_seconds) {
+    char input[100];
+    time_t start, end;
+    time(&start);
+
+    printf("Recite the incantation: %s\n", correct_spell);
+    scanf("%99[^
+]", input);
+
+    time(&end);
+    if (difftime(end, start) > time_limit_seconds) {
+        return 0; // Too slow
+    }
+
+    if (strcmp(input, correct_spell) == 0) {
+        return 1; // Correct spell cast
+    }
+
+    return 0; // Incorrect spell
+}
+```
+
+---
+
+## Gameplay Loop:
+
+1. Player explores locations.
+2. Unlocks spells through quests and interactions.
+3. Discovers lore elements.
+4. Faces structured boss fights with interactive spell mechanics.
+5. Completes main quest line with potential secret ending.
+
+---
+
+## Conclusion:
+
+This detailed Game Flow Document serves as the blueprint for the immersive mechanics, story progression, and technical details necessary for developing the fully-realized text-based adventure game, **Arkhon’s Awakening**, in C. Every component provided here ensures a structured and immersive player experience with clear coding implementation guidelines.

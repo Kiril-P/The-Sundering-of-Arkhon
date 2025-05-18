@@ -1,0 +1,142 @@
+# Game Design Document
+
+## Game Title
+
+**Arkhon's Awakening**
+
+## Overview
+
+A deeply immersive text-based dark fantasy adventure game where players step into the role of Arkhon, an ancient mage who awakens with no memories. Players explore, interact, and uncover hidden truths about their past to ultimately confront Arkhon the Blight, their dark reflection.
+
+## Core Premise
+
+Centuries ago, Arkhon the Archmage attempted to harness Eternity’s Flame, causing his soul to split into two entities:
+
+* **Arkhon the Benevolent** (player character)
+* **Arkhon the Blight** (antagonist)
+
+After defeating his dark twin centuries ago, Arkhon sealed himself away, knowing the evil would return. The player now awakens to finally end this cycle—or to continue it unwittingly.
+
+## Detailed Story
+
+### Introduction – Awakening
+
+* Arkhon wakes deep in a forgotten dungeon, confused and memoryless.
+* A quirky goblin named **Grizzik** excitedly greets him, having awaited his awakening due to legends.
+* Arkhon’s ancient staff, twisted yet majestic, pulses with latent magical energy.
+
+### World Layout
+
+**1. Dungeon of Awakening**
+
+* Initial setting; contains Arkhon’s staff.
+* Environmental lore inscriptions provide first subtle hints about Arkhon's duality.
+
+**2. Mountain Crossroads**
+
+* Epic scenic overlook with paths:
+
+  * **Upwards**: Impenetrable forcefield around the Evil Castle, home of Arkhon the Blight.
+  * **Downwards**: Path to the village of **Eldermoor**.
+
+**3. Eldermoor Village**
+
+* Richly detailed setting, NPC interactions, lore-rich dialogues.
+* Important locations:
+
+  * **Library of Elders** (essential early-game area)
+  * **Direfang Dungeon** (mid-game area)
+  * **Mystical Shop** (for potions, artifacts, clues)
+
+### Areas & Quests
+
+#### Eldermoor Library
+
+* Learn basic spells:
+
+  * **Flame Spark**: Minor attack spell
+  * **Shield of Dawn**: Basic defensive spell
+* Lore of the "Sundering of Arkhon"
+
+#### Direfang Dungeon
+
+* Accessible only after learning **Flame Spark** and **Shield of Dawn**.
+* Rewards:
+
+  * **Scroll of Lightning Arc**: Mid-level offensive spell
+  * Hints toward Arkhon’s past.
+
+#### Whispering Grove
+
+* Unlocked after Direfang Dungeon.
+* Lore-rich mystical forest area.
+* Rewards:
+
+  * **Nature’s Embrace Spell** (healing and restoration)
+  * **Visions of Past**: Magical visions providing cryptic clues about Arkhon’s identity.
+
+#### Caverns of Echoes
+
+* Challenging late-game dungeon.
+* Contains powerful lore scrolls explicitly hinting at Arkhon the Blight’s true identity.
+* Rewards:
+
+  * **Spell of Shadow’s Bane**: Essential for dispelling the evil forcefield around Evil Castle.
+
+### Evil Castle (Final Area)
+
+* Home to Arkhon the Blight.
+* Multiple endings:
+
+  * **Standard Ending**: Defeat the Blight with standard spells; he promises eventual return.
+  * **True Ending** (Secret Ending): Requires all lore interactions to unlock the ultimate spell **Soul Reunification**.
+
+## Spells & Progression
+
+* **Flame Spark** (Library)
+* **Shield of Dawn** (Library)
+* **Lightning Arc** (Direfang Dungeon)
+* **Nature’s Embrace** (Whispering Grove)
+* **Shadow’s Bane** (Caverns of Echoes)
+* **Soul Reunification** (Secret, requires complete lore interaction)
+
+## Interactive Lore & Secret Ending
+
+* Lore interactions spread across dungeons, the library, mystical forests, hidden journals, and NPC dialogues.
+* Only players who carefully examine the environment, interact repeatedly with NPCs, and revisit areas will unlock the complete story.
+* Secret Spell **Soul Reunification** merges both Arkhons, breaking the eternal cycle permanently.
+
+## Gameplay Mechanics
+
+* **Non-linear Exploration**: Players freely navigate; some paths initially blocked by magical or story-based barriers.
+* **Conditional Progression**: Certain  spells unlock after reaching specific milestones. Can enter dungeons prematurely, but will certainly die.
+* **Dynamic NPC Interactions**: NPC dialogue provides clues and lore.
+
+## Key Characters
+
+* **Arkhon the Benevolent** (Player)
+* **Grizzik the Goblin** (Companion, guide, comedic relief)
+* **Arkhon the Blight** (Hidden antagonist)
+* **Elder Maris** (Village elder, provides lore)
+* **Fiona the Librarian** (Important lore-giver)
+
+## Sample Lore Excerpt
+
+"On the night the mountain wept fire, Arkhon's ambition fractured the cosmos itself. Two essences, eternally bound yet eternally opposed, wove destiny anew. One bright, one dark; one keeper, one destroyer."
+
+## Gameplay Loop
+
+1. Explore areas and interact.
+2. Solve puzzles and overcome challenges to acquire spells and items.
+3. Uncover lore, gradually revealing Arkhon’s history.
+4. Face increasingly challenging enemies.
+5. Final confrontation determines the world’s fate.
+
+## Endings
+
+* **Cycle Continues**: Defeat Blight temporarily.
+* **Breaking the Cycle**: Merge both Arkhons into one, ending the eternal conflict forever.
+
+## Conclusion
+
+*Arkhon's Awakening* provides a gripping journey of discovery, filled with powerful revelations and meaningful choices. Players who delve deeper into the lore are richly rewarded with an unforgettable story and a satisfying conclusion that genuinely impacts the game's world.
