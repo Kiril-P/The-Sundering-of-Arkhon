@@ -19,6 +19,18 @@
 #define FLAG_GROVE_PUZZLE_ATTEMPTED 1024 // For the Whispering Grove riddle
 #define FLAG_CAVERNS_PUZZLE_SOLVED 2048 // For the Caverns of Echoes main puzzle
 #define FLAG_CAVERNS_TROLL_DEFEATED 4096 // For defeating the Cave Troll in Caverns of Echoes
+#define FLAG_ASKED_FIONA_ABOUT_ARKHON 8192 // For tracking if player asked Fiona about Arkhon
+#define FLAG_MET_MARIS_FIRST_TIME 16384 // For tracking the first conversation with Elder Maris
+#define FLAG_DIREFANG_SPIDER_DEFEATED 32768 // For tracking if the Direfang Spider is defeated
+#define FLAG_DIREFANG_PENDANT_VISIBLE 65536 // Direfang Pendant is visible
+#define FLAG_DIREFANG_PENDANT_COLLECTED 131072 // Direfang Pendant has been collected
+#define FLAG_SHOPKEEPER_MET_FIRST_TIME 262144 // For tracking the first proper meeting with the shopkeeper
+#define FLAG_RECEIVED_SHOP_POTION 524288 // For tracking if the free shop potion was received
+#define FLAG_GROVE_PUZZLE_SOLVED 1048576 // For tracking if the Whispering Grove riddle was solved
+#define FLAG_GROVE_COMPLETED_FOR_CAVERNS_QUEST 2097152 // Grove done, ready for Caverns quest
+#define FLAG_CAVERNS_QUEST_GIVEN 4194304 // Caverns of Echoes quest/info has been given
+#define FLAG_GRIZZIK_TALK_SUGGESTED 8388608 // Player has been prompted to talk to Grizzik
+#define FLAG_GROVE_HEALING_RECEIVED 16777216 // Player has received the one-time heal in Whispering Grove
 // ... add more flags for lore points, quest completions, etc.
 
 

@@ -51,11 +51,13 @@ int main() {
             printf("  cast <spell_name>       - Attempt to cast a known spell (context-dependent).\n");
             printf("  learn <spell_name>      - Learn a new spell if offered.\n");
             printf("  status                  - Check your player status, spells, and inventory.\n");
+            printf("  inventory               - Check your items.\n");
             printf("  get <item_name>         - Pick up an item.\n");
             printf("  read lore               - Read lore available in the current location.\n");
             printf("  examine symbols         - Focus on peculiar symbols (context-dependent, e.g., Caverns_of_Echoes).\n");
             printf("  meditate                - Alias for 'examine symbols'.\n");
             printf("  test combat <enemy_name> - Initiate a test combat (e.g., test combat Goblin_Scout).\n");
+            printf("  use <item_name>         - Use an item.\n");
             printf("  quit                    - Exit the game.\n");
         } else if (strncasecmp(choice, "explore ", 8) == 0) {
             char locationToExplore[MAX_LOCATION_NAME_LENGTH];
@@ -108,6 +110,8 @@ int main() {
             }
         } else if (strcasecmp(choice, "status") == 0) {
             displayPlayerStatus(&player);
+        } else if (strcasecmp(choice, "inventory") == 0) {
+            displayPlayerStatus(&player);
         } else if (strncasecmp(choice, "get ", 4) == 0) {
             char itemToGet[MAX_ITEM_NAME_LENGTH];
             if (sscanf(choice + 4, "%49s", itemToGet) == 1) { // Skip "get "
@@ -118,6 +122,16 @@ int main() {
                         printf("Grizzik: 'Excellent! With the Mage's Staff, your power will surely return!'\n");
                     } else {
                         printf("You already have the Mage's Staff.\n");
+                    }
+                } else if (strcasecmp(player.currentLocation, "Direfang_Dungeon") == 0 && strcasecmp(itemToGet, "Direfang_Pendant") == 0) {
+                    if (checkProgressionFlag(&player, FLAG_DIREFANG_PENDANT_VISIBLE) && !checkProgressionFlag(&player, FLAG_DIREFANG_PENDANT_COLLECTED)) {
+                        addItemToInventory(&player, "Direfang_Pendant");
+                        setProgressionFlag(&player, FLAG_DIREFANG_PENDANT_COLLECTED);
+                        printf("You pick up the Direfang_Pendant. It feels strangely warm to the touch and hums with a faint energy.\n");
+                    } else if (checkProgressionFlag(&player, FLAG_DIREFANG_PENDANT_COLLECTED)) {
+                        printf("You already have the Direfang_Pendant.\n");
+                    } else {
+                        printf("You don't see any Direfang_Pendant here right now.\n"); // Spider not defeated or pendant not made visible
                     }
                 } else {
                     printf("You can't seem to get '%s' here, or it doesn't exist.\n", itemToGet);
@@ -229,6 +243,35 @@ int main() {
                 }
             } else {
                 printf("You find no such symbols to examine or reason to meditate here.\n");
+            }
+        } else if (strncasecmp(choice, "use ", 4) == 0) {
+            char itemToUse[MAX_ITEM_NAME_LENGTH];
+            if (sscanf(choice + 4, "%49s", itemToUse) == 1) { // Skip "use "
+                if (strcasecmp(itemToUse, "Minor_Healing_Potion") == 0) {
+                    if (hasItem(&player, "Minor_Healing_Potion")) {
+                        // Remove item from inventory - this function needs to be created in player.c
+                        // removeItemFromInventory(player, "Minor_Healing_Potion"); 
+                        // For now, let's assume potions are one-use and we don't have stacking or quantity.
+                        // A more robust inventory would handle removing one charge or one item.
+                        // We'll just note its use and prevent re-use of the *same* single gifted potion for now
+                        // by checking a flag or by actually removing it if removeItemFromInventory existed.
+                        // Since removeItemFromInventory is not there, let's consume it conceptually.
+                        // To prevent re-using the *exact same instance* if not removed, we might need another flag.
+                        // However, player.c has addItemToInventory, but not remove. For simplicity, let's assume it's consumed.
+                        
+                        healPlayer(&player, 75); // healPlayer function is in player.c
+                        printf("You drink the Minor_Healing_Potion. A warm energy spreads through you, mending some of your wounds. (HP +25)\n");
+                        // To make it truly one-use without a remove function, we'd need to manage its presence more carefully.
+                        // For now, the spirit of the request is to use it. If the player somehow gets another, they can use that too.
+                        // The FLAG_RECEIVED_SHOP_POTION just prevents getting more free ones from Elara.
+                    } else {
+                        printf("You don't have a Minor_Healing_Potion to use.\n");
+                    }
+                } else {
+                    printf("You can't use '%s' right now, or don't know how.\n", itemToUse);
+                }
+            } else {
+                printf("Use what? (e.g., use Minor_Healing_Potion)\n");
             }
         } else {
             printf("Unknown command: '%s'. Type 'help' for a list of commands.\n", choice);

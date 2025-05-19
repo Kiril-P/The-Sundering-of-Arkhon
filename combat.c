@@ -13,7 +13,7 @@ int castSpellTimed(const char *correctSpell, int timeLimitSeconds) {
     time_t start_time, end_time;
     time(&start_time);
 
-    printf("Recite the incantation: %s\n> ", correctSpell);
+    printf("Recite the incantation for %s (%d seconds limit):\n> ", correctSpell, timeLimitSeconds);
     fgets(input, sizeof(input), stdin);
     input[strcspn(input, "\n")] = 0; // Remove newline
 
@@ -31,6 +31,34 @@ int castSpellTimed(const char *correctSpell, int timeLimitSeconds) {
 
     printf("Incorrect incantation! The spell fails.\n");
     return 0; // Incorrect spell
+}
+
+// New function for multi-stage spellcasting
+int castMultiStageSpellTimed(const char* spellNameForDisplay, const char* incantations[], int numStages, int timeLimitPerStage) {
+    char input[100];
+    time_t start_time, end_time;
+
+    for (int i = 0; i < numStages; ++i) {
+        time(&start_time);
+        printf("Recite %s - Stage %d/%d: %s (%d seconds limit):\n> ", 
+               spellNameForDisplay, i + 1, numStages, incantations[i], timeLimitPerStage);
+        fgets(input, sizeof(input), stdin);
+        input[strcspn(input, "\n")] = 0; // Remove newline
+        time(&end_time);
+
+        if (difftime(end_time, start_time) > timeLimitPerStage) {
+            printf("Too slow for stage %d! The magic destabilizes and the spell fails.\n", i + 1);
+            return 0; // Too slow for this stage, spell fails
+        }
+
+        if (strcasecmp(input, incantations[i]) != 0) {
+            printf("Incorrect incantation for stage %d! The spell unravels.\n", i + 1);
+            return 0; // Incorrect incantation for this stage, spell fails
+        }
+        printf("Stage %d/%d successful!\n", i + 1, numStages);
+    }
+
+    return 1; // All stages completed successfully
 }
 
 int getEnemyByName(const char *enemyName, Enemy *targetEnemy) {
@@ -96,7 +124,7 @@ int startCombat(Player *player, Enemy *enemy) {
     while(player->currentHp > 0 && enemy->currentHp > 0) {
         printf("\nYour HP: %d/%d | %s's HP: %d/%d", player->currentHp, player->maxHp, enemy->name, enemy->currentHp, enemy->maxHp);
         if (playerShieldTurns > 0) printf(" (Shielded)");
-        printf("\nCombat options: attack, spell <name>, status, flee\n> ");
+        printf("\nCombat options: attack, spell <name>, spells, status, flee\n> ");
         fgets(combatChoice, sizeof(combatChoice), stdin);
         combatChoice[strcspn(combatChoice, "\n")] = 0;
 
@@ -118,6 +146,7 @@ int startCombat(Player *player, Enemy *enemy) {
                         enemy->currentHp -= spellDamage;
                     } else {
                         printf("Your Flame Spark fizzles due to incorrect or slow incantation!\n");
+                        continue; // Player gets to try another action this turn
                     }
                 } else if (strcasecmp(spellToUse, "Shield_of_Dawn") == 0) {
                      if (castSpellTimed("Aegis Lucis", 8)) { // Incantation from GameDesignDoc
@@ -125,21 +154,26 @@ int startCombat(Player *player, Enemy *enemy) {
                         playerShieldTurns = 2; // Shield lasts for 2 enemy attacks
                      } else {
                         printf("Your Shield of Dawn fails to materialize!\n");
+                        continue; // Player gets to try another action this turn
                      }
                 } else if (strcasecmp(spellToUse, "Lightning_Arc") == 0) {
-                    if (castSpellTimed("Fulmen Arcana", 12)) { // Placeholder incantation
-                        int spellDamage = 35 + (rand() % 16); // Lightning Arc: 35-50 damage
-                        printf("A crackling arc of lightning leaps from your fingertips, striking %s for %d damage!\n", enemy->name, spellDamage);
+                    const char* lightningIncantations[] = {"Fulmen Primus", "Arcus Maximus", "Tonitrus Impetus"};
+                    if (castMultiStageSpellTimed("Lightning_Arc", lightningIncantations, 3, 7)) { // 3 stages, 7 seconds per stage
+                        int spellDamage = 45 + (rand() % 21); // Lightning Arc: 45-65 damage
+                        printf("A tremendous crackling arc of lightning, woven from three potent incantations, engulfs %s for %d damage!\n", enemy->name, spellDamage);
                         enemy->currentHp -= spellDamage;
                     } else {
-                        printf("Your Lightning Arc dissipates weakly!\n");
+                        printf("Your Lightning Arc spell failed to fully materialize!\n");
+                        continue; // Player gets to try another action this turn
                     }
                 } else if (strcasecmp(spellToUse, "Natures_Embrace") == 0) {
                     if (castSpellTimed("Terra Sanatio", 10)) { // Placeholder incantation
-                        int healAmount = 30 + (rand() % 21); // Nature's Embrace: 30-50 HP heal
+                        int healAmount = 50 + (rand() % 21); // Nature's Embrace: Increased to 50-70 HP heal
                         healPlayer(player, healAmount); // Using healPlayer from player.c
+                        // The healPlayer function already prints the amount healed and current HP.
                     } else {
                         printf("The healing energies of Nature's Embrace fail to coalesce!\n");
+                        continue; // Player gets to try another action this turn
                     }
                 }
                 // Add Shadows_Bane later - GameFlow says it dispels forcefield, not a direct combat spell unless vs specific enemies.
@@ -165,8 +199,17 @@ int startCombat(Player *player, Enemy *enemy) {
         } else if (strcasecmp(combatChoice, "status") == 0) {
             displayPlayerStatus(player);
             continue; // Does not consume a turn
-        }else {
-            printf("Invalid combat command. Options: attack, spell <name>, status, flee.\n");
+        } else if (strcasecmp(combatChoice, "spells") == 0) {
+            printf("Known spells:\n");
+            for (int i = 0; i < player->learnedSpellCount; ++i) {
+                printf("  - %s\n", player->spellbook[i].name);
+            }
+            if (player->learnedSpellCount == 0) {
+                printf("  You don't know any spells yet.\n");
+            }
+            continue; // Does not consume a turn
+        } else {
+            printf("Invalid combat command. Options: attack, spell <name>, spells, status, flee.\n");
             continue; // Does not consume a turn if invalid command
         }
 
@@ -244,30 +287,42 @@ int startFinalBossBattle(Player *player, Enemy *boss) {
         // Player Attack Phase
         printf("\n-- Your Attack Phase --\n");
         printf("Choose your offensive spell: (1) Lightning_Arc (Fulmen Arcana) (2) Flame_Spark (Ignis Minor)\n");
-        printf("Enter spell number (or type 'status'): ");
+        printf("Enter spell number (or type 'spells' to list, 'status' for player status): ");
         char choice[50];
         fgets(choice, sizeof(choice), stdin);
         choice[strcspn(choice, "\n")] = 0;
 
-        int spellChoice = atoi(choice) -1; // 0 for Lightning, 1 for Flame Spark
-
         if (strcasecmp(choice, "status") == 0) {
             displayPlayerStatus(player);
-            continue; // Doesn't consume turn
+            continue; // Re-prompt for attack phase
+        } else if (strcasecmp(choice, "spells") == 0) {
+            printf("Known spells for offensive phase:\n");
+            // For final boss, only specific offensive spells are relevant for this phase
+            printf("  - Lightning_Arc (Incantation: Fulmen Arcana)\n");
+            printf("  - Flame_Spark (Incantation: Ignis Minor)\n");
+            // We could also list all known spells if desired, but the prompt is for specific ones.
+            // For now, sticking to the phase-relevant ones as per original design.
+            // If we wanted to list all: 
+            // for (int i = 0; i < player->learnedSpellCount; ++i) {
+            //     printf("  - %s\n", player->spellbook[i].name);
+            // }
+            continue; // Re-prompt for attack phase
         }
 
-        if (spellChoice == 0 || spellChoice == 1) {
-            if (hasSpell(player, offensiveSpells[spellChoice])) {
-                printf("Prepare to cast %s!\n", offensiveSpells[spellChoice]);
-                if (castSpellTimed(offensiveIncantations[spellChoice], 10)) { // 10 sec timer
-                    printf("Your %s strikes Arkhon the Blight! He recoils in pain!\n", offensiveSpells[spellChoice]);
-                    bossHitsTaken += offensiveSpellDamage[spellChoice];
+        int spellChoiceNum = atoi(choice);
+
+        if (spellChoiceNum == 0 || spellChoiceNum == 1) {
+            if (hasSpell(player, offensiveSpells[spellChoiceNum])) {
+                printf("Prepare to cast %s!\n", offensiveSpells[spellChoiceNum]);
+                if (castSpellTimed(offensiveIncantations[spellChoiceNum], 10)) { // 10 sec timer
+                    printf("Your %s strikes Arkhon the Blight! He recoils in pain!\n", offensiveSpells[spellChoiceNum]);
+                    bossHitsTaken += offensiveSpellDamage[spellChoiceNum];
                     if (bossHitsTaken >= bossHitsNeededToDefeat) break; // Boss defeated
                 } else {
                     printf("Your spell fails! The Blight laughs mockingly.\n");
                 }
             } else {
-                printf("You don't know %s! You hesitate, and the Blight seizes the opening!\n", offensiveSpells[spellChoice]);
+                printf("You don't know %s! You hesitate, and the Blight seizes the opening!\n", offensiveSpells[spellChoiceNum]);
                 // No direct damage, but Blight gets to attack immediately.
             }
         } else {
@@ -280,20 +335,43 @@ int startFinalBossBattle(Player *player, Enemy *boss) {
 
         // Boss Attack Phase
         printf("\n-- Arkhon the Blight's Attack Phase --\n");
-        int randomAttack = rand() % numBossAttackTypes;
-        printf("%s\n", bossAttackDescriptions[randomAttack]);
-        printf("You must defend! Recite the incantation for Shield_of_Dawn (Aegis Lucis):\n");
+        int attackIndex = rand() % numBossAttackTypes;
+        printf("%s\n", bossAttackDescriptions[attackIndex]);
+        printf("Choose your defensive spell: (1) Shield_of_Dawn (Aegis Lucis)\n");
+        printf("Enter spell number (or type 'spells' to list, 'status' for player status): ");
+        fgets(choice, sizeof(choice), stdin);
+        choice[strcspn(choice, "\n")] = 0;
 
-        if (hasSpell(player, "Shield_of_Dawn")) {
-            if (castSpellTimed(defensiveIncantations[0], 8)) { // 8 sec timer for defense
-                printf("Your Shield of Dawn flares, deflecting the Blight's assault! You stand firm!\n");
+        if (strcasecmp(choice, "status") == 0) {
+            displayPlayerStatus(player);
+            // playerTurnSuccess = 0; // Undeclared and unnecessary, continue handles re-prompt
+            // This continue skips the boss "successful attack" logic and re-runs player defense turn
+            continue; 
+        } else if (strcasecmp(choice, "spells") == 0) {
+            printf("Known spells for defensive phase:\n");
+            // For final boss, only Shield_of_Dawn is relevant for this phase
+            printf("  - Shield_of_Dawn (Incantation: Aegis Lucis)\n");
+            // Similar to offensive phase, could list all spells or just phase-relevant.
+            continue; // Re-prompt for defense phase
+        }
+
+        spellChoiceNum = atoi(choice);
+
+        if (spellChoiceNum == 0) {
+            if (hasSpell(player, defensiveSpells[0])) {
+                if (castSpellTimed(defensiveIncantations[0], 8)) { // 8 sec timer for defense
+                    printf("Your Shield of Dawn flares, deflecting the Blight's assault! You stand firm!\n");
+                } else {
+                    printf("Your shield falters! The Blight's attack slams into you!\n");
+                    takeDamage(player, 25 + (rand() % 11)); // Boss damage: 25-35
+                }
             } else {
-                printf("Your shield falters! The Blight's attack slams into you!\n");
-                takeDamage(player, 25 + (rand() % 11)); // Boss damage: 25-35
+                printf("You don't know Shield_of_Dawn! You are defenseless against the assault!\n");
+                takeDamage(player, 30 + (rand() % 16)); // Higher damage if no shield spell known: 30-45
             }
         } else {
-            printf("You don't know Shield_of_Dawn! You are defenseless against the assault!\n");
-            takeDamage(player, 30 + (rand() % 16)); // Higher damage if no shield spell known: 30-45
+            printf("Invalid choice. You fumble, and the Blight prepares his assault!\n");
+            // No direct damage, but Blight gets to attack.
         }
 
         if (player->currentHp <= 0) break; // Check if player died

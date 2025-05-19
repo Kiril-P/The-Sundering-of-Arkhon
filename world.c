@@ -48,7 +48,7 @@ void initializeLocations() {
     // Village of Eldermoor
     memset(&loc, 0, sizeof(Location));
     strncpy(loc.name, "Village_of_Eldermoor", MAX_LOCATION_NAME_LENGTH - 1);
-    strncpy(loc.description, "You have arrived at the Village of Eldermoor. It seems quiet, nestled in a valley. Smoke curls from a few chimneys. Notable locations are the Library_of_Elders, a Mystical_Shop, and the entrance to Direfang_Dungeon.", MAX_DESCRIPTION_LENGTH - 1);
+    strncpy(loc.description, "You have arrived at the Village of Eldermoor. It seems quiet, nestled in a valley. Smoke curls from a few chimneys. Notable locations are the Library_of_Elders, a Mystical_Shop, the entrance to Direfang_Dungeon, and the mysterious Whispering_Grove.", MAX_DESCRIPTION_LENGTH - 1);
     addExit(&loc, "Crossroads");
     addExit(&loc, "Library_of_Elders");
     addExit(&loc, "Mystical_Shop");
@@ -110,7 +110,7 @@ void initializeNPCs() {
     memset(&npc, 0, sizeof(NPC));
     strncpy(npc.name, "Grizzik", MAX_NPC_NAME_LENGTH - 1);
     strncpy(npc.currentLocation, "Dungeon_of_Awakening", MAX_LOCATION_NAME_LENGTH - 1);
-    strncpy(npc.dialogue, "Grizzik: 'Great Arkhon! Ready to explore? Or perhaps you have questions for Grizzik?'", MAX_DESCRIPTION_LENGTH - 1);
+    strncpy(npc.dialogue, "Grizzik: 'By the Ancients, you're finally awake, Great Arkhon! Grizzik has waited long, oh so long! The legends spoke of your return, you see! You probably don't remember much, do ya? Head's probably as empty as a troll's cookpot after a feast! Don't you worry, Grizzik's here to help! That staff you'll find, the big twisty one? That's your Mage's Staff, full of sleepy magic! It'll help you remember, I reckon. Once we're out of this dusty old dungeon, you'll see the Crossroads. Up high, that's the Evil Castle... nasty place, a big sparkly wall keeps everyone out. But down the path is Eldermoor village, much nicer! For now, what's on your mind, eh? Ready to poke around or got questions for little old Grizzik?'", MAX_DESCRIPTION_LENGTH - 1);
     gameNPCs[numGameNPCs++] = npc;
 
     // Fiona the Librarian
@@ -125,6 +125,13 @@ void initializeNPCs() {
     strncpy(npc.name, "Elder_Maris", MAX_NPC_NAME_LENGTH - 1);
     strncpy(npc.currentLocation, "Village_of_Eldermoor", MAX_LOCATION_NAME_LENGTH - 1);
     strncpy(npc.dialogue, "Elder Maris: 'Welcome to Eldermoor, traveler. Our village has seen many strange things. Perhaps you are another?'", MAX_DESCRIPTION_LENGTH - 1);
+    gameNPCs[numGameNPCs++] = npc;
+
+    // Elara the Mystic (Shopkeeper)
+    memset(&npc, 0, sizeof(NPC));
+    strncpy(npc.name, "Elara_the_Mystic", MAX_NPC_NAME_LENGTH - 1);
+    strncpy(npc.currentLocation, "Mystical_Shop", MAX_LOCATION_NAME_LENGTH - 1);
+    strncpy(npc.dialogue, "Elara: 'Welcome to my humble abode, seeker. The threads of fate shimmer around you. What is it you search for? Knowledge? Trinkets? Or perhaps a glimpse of what's to come?'", MAX_DESCRIPTION_LENGTH - 1);
     gameNPCs[numGameNPCs++] = npc;
 }
 
@@ -155,7 +162,6 @@ const NPC* getNPCData(const char *npcName) {
 void processExplore(Player *player, const char *locationNameInput) {
     const Location* currentLocData = getLocationData(player->currentLocation);
     int canMove = 0;
-    int justWonGrovePuzzle = 0;
 
     if (!currentLocData) {
         printf("Error: Your current location data is missing! Returning to a known safe spot.\n");
@@ -196,10 +202,12 @@ void processExplore(Player *player, const char *locationNameInput) {
                 int combatResult = startCombat(player, &direfangSpider);
                 if (combatResult == 1) { 
                     printf("You defeated the Direfang Spider! The immediate area seems clear.\n");
+                    setProgressionFlag(player, FLAG_DIREFANG_SPIDER_DEFEATED); // Spider is defeated
+                    setProgressionFlag(player, FLAG_DIREFANG_PENDANT_VISIBLE); // Pendant is now visible
                     if (!checkProgressionFlag(player, FLAG_LEARNED_LIGHTNING_ARC)) { // Only award once
                         learnSpell(player, "Lightning_Arc"); 
                         setProgressionFlag(player, FLAG_LEARNED_LIGHTNING_ARC);
-                        printf("Among the spider's remains, you find a scorched scroll. As you touch it, knowledge of 'Lightning_Arc' (Incantation: Fulmen Arcana) floods your mind!\n");
+                        printf("Among the spider's remains, you find a scorched scroll. As you touch it, knowledge of the potent offensive spell 'Lightning_Arc' (Incantation: Fulmen Arcana) floods your mind! This spell calls forth a damaging bolt of electricity.\n");
                         printf("Additional lore snippet: The spiders of Direfang were once mere cave dwellers, twisted by a dark influence seeping from the mountain's peak...\n");
                     }
                 } else if (combatResult == 0) { 
@@ -237,7 +245,7 @@ void processExplore(Player *player, const char *locationNameInput) {
 
             if (strcasecmp(answer, "mountain") == 0) {
                 printf("The whispers soften, a path clearing slightly. 'Wise... you may pass this trial.'\n");
-                justWonGrovePuzzle = 1;
+                setProgressionFlag(player, FLAG_GROVE_PUZZLE_SOLVED);
             } else {
                 printf("A chilling laughter echoes. 'Foolish mortal!' Thorny vines lash out, and shadows deepen!\n");
                 takeDamage(player, 15); // Penalty for wrong answer
@@ -257,8 +265,15 @@ void processExplore(Player *player, const char *locationNameInput) {
                 if (!checkProgressionFlag(player, FLAG_LEARNED_NATURES_EMBRACE)) { // Only award once
                     learnSpell(player, "Natures_Embrace");
                     setProgressionFlag(player, FLAG_LEARNED_NATURES_EMBRACE);
-                    printf("A soft, green glow emanates from where the wraith vanished. You feel a soothing energy and learn 'Nature_s_Embrace' (Incantation: Terra Sanatio)!\n");
+                    setProgressionFlag(player, FLAG_GROVE_COMPLETED_FOR_CAVERNS_QUEST); // Grove prerequisite met for Caverns quest
+                    printf("A soft, green glow emanates from where the wraith vanished. You feel a soothing energy and learn the powerful healing spell 'Nature_s_Embrace' (Incantation: Terra Sanatio)! This spell can mend grievous wounds.\n");
                     printf("Vision: You see a fleeting image of Arkhon, younger, tending to a wounded ancient tree, a look of sorrow on his face... 'Even in strength, one must nurture life,' a distant voice echoes.\n");
+                }
+                // Post-wraith messaging based on riddle outcome
+                if (checkProgressionFlag(player, FLAG_GROVE_PUZZLE_SOLVED)) {
+                    printf("With the grove's guardian dispersed and its riddle solved, a profound peace settles upon this part of the Whispering Grove. The ancient trees seem to hum in quiet approval.\n");
+                } else {
+                    printf("Though you overcame the spectral guardian, the grove's ancient trees still rustle with an air of disquiet from the unsolved riddle. The immediate danger has passed, but a true understanding of this place eludes you.\n");
                 }
             } else if (combatResult == 0) {
                 printf("You fled from the Whispering Wraith, escaping the heart of the Grove for now.\n");
@@ -277,6 +292,13 @@ void processExplore(Player *player, const char *locationNameInput) {
 
     // Caverns of Echoes Logic - Part 1: Entry and Troll Encounter
     if (strcasecmp(locationNameInput, "Caverns_of_Echoes") == 0 && 
+        strcasecmp(player->currentLocation, "Village_of_Eldermoor") == 0 &&  // Specifically from Village
+        !checkProgressionFlag(player, FLAG_CAVERNS_QUEST_GIVEN)) {
+        printf("You recall hearing about the Caverns of Echoes, but Elder Maris has not yet spoken to you about venturing there. Perhaps you should speak with her first if you've completed other tasks in the region.\n");
+        return; // Prevent entry
+    }
+
+    if (strcasecmp(locationNameInput, "Caverns_of_Echoes") == 0 && 
         strcasecmp(player->currentLocation, "Caverns_of_Echoes") != 0 && 
         !checkProgressionFlag(player, FLAG_LEARNED_SHADOWS_BANE)) { // Only full sequence if spell not learned
         
@@ -292,7 +314,11 @@ void processExplore(Player *player, const char *locationNameInput) {
             if (combatResult == 1) {
                 printf("The Cave_Troll crashes to the ground, defeated. The immediate passage is clear.\n");
                 setProgressionFlag(player, FLAG_CAVERNS_TROLL_DEFEATED); // New flag: Mark troll as defeated
-                // Puzzle and reward will follow in the next part of the logic for this location if troll is beaten.
+                // Force update current location and re-process for description
+                strncpy(player->currentLocation, "Caverns_of_Echoes", MAX_LOCATION_NAME_LENGTH -1);
+                player->currentLocation[MAX_LOCATION_NAME_LENGTH - 1] = '\0';
+                processExplore(player, player->currentLocation); // This will make it describe Caverns_of_Echoes
+                return; // Important: exit current processExplore to avoid double processing/description
             } else if (combatResult == 0) { // Fled from Troll
                 printf("You managed to flee from the Cave_Troll, scrambling back towards the entrance of the Caverns.\n");
                 return; // Player does not enter Caverns, stays in previous location
@@ -418,6 +444,13 @@ void processExplore(Player *player, const char *locationNameInput) {
             } else {
                 printf("The Evil Castle looms ominously. A shimmering forcefield blocks your path.\n");
             }
+        } else if (strcasecmp(newLocData->name, "Village_of_Eldermoor") == 0) {
+            printf("%s\n", newLocData->description); // Print base description
+            if (checkProgressionFlag(player, FLAG_CAVERNS_QUEST_GIVEN)) {
+                printf("Elder Maris has spoken of the perilous Caverns_of_Echoes, now accessible to you.\n");
+            } else if (checkProgressionFlag(player, FLAG_GROVE_COMPLETED_FOR_CAVERNS_QUEST)) {
+                printf("Having dealt with the matters in the Whispering Grove, you feel a pull to speak with Elder Maris. She may have further guidance.\n");
+            }
         } else {
             printf("%s\n", newLocData->description); // Standard description
         }
@@ -434,12 +467,21 @@ void processExplore(Player *player, const char *locationNameInput) {
         if (newLocData->numExits > 0) {
             printf("Exits: ");
             for (int i = 0; i < newLocData->numExits; ++i) {
+                if (strcasecmp(newLocData->name, "Village_of_Eldermoor") == 0 && 
+                    strcasecmp(newLocData->exits[i], "Caverns_of_Echoes") == 0 && 
+                    !checkProgressionFlag(player, FLAG_CAVERNS_QUEST_GIVEN)) {
+                    continue; // Don't list Caverns as an exit from Village unless quest is given
+                }
                 printf("%s  ", newLocData->exits[i]);
             }
             printf("\n");
         }
 
         if (strcasecmp(newLocData->name, "Dungeon_of_Awakening") == 0) {
+            if (checkProgressionFlag(player, FLAG_GRIZZIK_MET) && !checkProgressionFlag(player, FLAG_GRIZZIK_TALK_SUGGESTED)) {
+                printf("Grizzik looks at you expectantly, bouncing on his heels, clearly eager to speak. (type 'talk Grizzik')\n");
+                setProgressionFlag(player, FLAG_GRIZZIK_TALK_SUGGESTED);
+            }
             if (checkProgressionFlag(player, FLAG_GRIZZIK_MET) && !hasItem(player, "Mage_Staff")) {
                 printf("Grizzik points to the staff. 'Don't forget your Mage_Staff, Arkhon!' (type 'get Mage_Staff')\n");
             }
@@ -465,14 +507,27 @@ void processExplore(Player *player, const char *locationNameInput) {
         } else if (strcasecmp(newLocData->name, "Whispering_Grove") == 0) {
             // This is printed when player is *in* the grove (after entry events)
             printf("The whispers in the grove are incessant. Paths twist and turn through the ancient trees.\n");
-            if (checkProgressionFlag(player, FLAG_LEARNED_NATURES_EMBRACE)) {
-                printf("You feel a faint connection to the healing energies you discovered here.\n");
-            } else if (justWonGrovePuzzle) {
-                 printf("The path revealed by solving the riddle seems to lead deeper, but an eerie presence still lingers.\n");
-            } else if (checkProgressionFlag(player, FLAG_GROVE_PUZZLE_ATTEMPTED)){
-                printf("The grove feels oppressive and confusing, the shadows clinging to you after failing the trees' riddle.\n");
+            if (checkProgressionFlag(player, FLAG_LEARNED_NATURES_EMBRACE)) { // Wraith defeated
+                if (checkProgressionFlag(player, FLAG_GROVE_PUZZLE_SOLVED)) {
+                    printf("The grove feels serene and welcoming, its secrets revealed to you. You sense the healing energy of Nature's Embrace all around.\n");
+                    if (!checkProgressionFlag(player, FLAG_GROVE_HEALING_RECEIVED)) {
+                        healPlayer(player, player->maxHp); // Full heal
+                        printf("The profound peace and vibrant life energy of the restored Grove wash over you, mending your wounds completely!\n");
+                        setProgressionFlag(player, FLAG_GROVE_HEALING_RECEIVED);
+                    }
+                } else {
+                    printf("The grove is quiet now that its guardian is gone, but the ancient trees still seem to rustle with a hint of displeasure from your earlier misstep with their riddle. The air is heavy.\n");
+                }
+            } else { // Wraith not yet defeated
+                if (checkProgressionFlag(player, FLAG_GROVE_PUZZLE_SOLVED)) {
+                    printf("The trees seem to guide your path, their whispers encouraging. However, an eerie presence, the Grove's true challenge, still lingers deeper within.\n");
+                } else if (checkProgressionFlag(player, FLAG_GROVE_PUZZLE_ATTEMPTED)) { // Riddle attempted and failed
+                    printf("The grove feels oppressive and confusing after failing the trees' riddle. A menacing presence lurks nearby, and the way forward is unclear.\n");
+                } else {
+                    // Player is in the grove, but riddle not attempted (e.g. if they loaded a save directly in grove - less likely with current design)
+                    printf("The ancient trees watch you, their intentions unclear. The air is thick with mist and unsettling whispers. An important riddle seems to guard this place.\n");
+                }
             }
-            // TODO: Add more specific interactions or sub-areas for Whispering Grove.
         } else if (strcasecmp(newLocData->name, "Caverns_of_Echoes") == 0) {
             // This is printed when player is *in* the caverns (after entry events)
             // Part 2 of Caverns of Echoes logic will go here (puzzle & reward if troll defeated)
@@ -498,6 +553,19 @@ void processExplore(Player *player, const char *locationNameInput) {
             // His comments can be integrated into location descriptions or specific triggers.
         }
 
+    } else if (strcasecmp(newLocData->name, "Direfang_Dungeon") == 0) {
+        if (checkProgressionFlag(player, FLAG_DIREFANG_SPIDER_DEFEATED)) {
+            printf("The dungeon chamber is eerily quiet now, the monstrous Direfang Spider defeated. You clutch the scorched scroll, its arcane knowledge settling in your mind. The way back to the Village_of_Eldermoor is clear.\n");
+            if (checkProgressionFlag(player, FLAG_DIREFANG_PENDANT_VISIBLE) && !checkProgressionFlag(player, FLAG_DIREFANG_PENDANT_COLLECTED)) {
+                printf("Among the spider's remains, you also spot a glinting Direfang_Pendant!\n");
+                printf("To pick up the pendant, type: get Direfang_Pendant\n");
+            }
+        } else {
+            // This state implies player is in the dungeon but spider is not yet defeated.
+            // Given current logic (fight on entry attempt, no entry on flee/loss), this might be less common.
+            // However, if entry logic changes or for robustness:
+            printf("The dungeon is dark and menacing. You have yet to confront its primary guardian or fled from a previous encounter. The path to Village_of_Eldermoor offers an escape.\n");
+        }
     } else if (canMove) { // It was a valid exit, but location data not found (should not happen with current setup)
         printf("Error: The path to '%s' seems to exist, but the area itself is undefined. This is a bug.\n", locationNameInput);
     }
@@ -506,38 +574,80 @@ void processExplore(Player *player, const char *locationNameInput) {
 
 void processTalk(Player *player, const char *npcNameInput) {
     const NPC* npc = getNPCData(npcNameInput);
+    // const Location* currentLoc = getLocationData(player->currentLocation); // Unused variable
 
     if (!npc) {
-        printf("There is no one called '%s' here, or they are not talkative.\n", npcNameInput);
+        printf("There is no one named '%s' here to talk to.\n", npcNameInput);
         return;
     }
 
-    if (strcasecmp(player->currentLocation, npc->currentLocation) != 0) {
-        printf("%s is not in your current location (%s).\n", npc->name, player->currentLocation);
+    if (strcasecmp(npc->currentLocation, player->currentLocation) != 0) {
+        printf("%s is not in this location.\n", npc->name);
         return;
     }
 
-    printf("\n~ Talking to %s ~\n", npc->name);
-    printf("%s\n", npc->dialogue);
+    printf("%s\n", npc->dialogue); // Print the NPC's main dialogue
 
-    // Specific NPC interactions
+    // Special dialogue/interactions based on NPC and game state
     if (strcasecmp(npc->name, "Grizzik") == 0) {
-        if (strcasecmp(player->currentLocation, "Dungeon_of_Awakening") == 0 && !hasItem(player, "Mage_Staff")) {
-            printf("Grizzik: 'Don't forget your staff, Arkhon! It's right over there!'\n");
-        }
-        // Add more Grizzik context-specific dialogue
-    } else if (strcasecmp(npc->name, "Fiona") == 0) {
-        if (strcasecmp(player->currentLocation, "Library_of_Elders") == 0) {
-            if (!hasSpell(player, "Flame_Spark") || !hasSpell(player, "Shield_of_Dawn")) {
-                printf("Fiona: 'If you wish to learn a spell, just tell me to \'learn <spell_name>\'.'\n");
+        if (strcasecmp(player->currentLocation, "Dungeon_of_Awakening") == 0) {
+            if (!checkProgressionFlag(player, FLAG_STAFF_RETRIEVED)) {
+                printf("Grizzik eyes the alcove where the staff rests. 'Your staff, Arkhon! It's over there! It pulses with your magic, even Grizzik can feel it! You should get it!'\n");
             } else {
-                printf("Fiona: 'Have you had a chance to read some of the lore here? It might prove insightful.'\n");
+                printf("Grizzik claps his hands. 'With your staff, you're already looking more like the mighty Arkhon of legend! So, where to first after this charming hole in the ground? The Crossroads await!'\n");
+            }
+        } else if (strcasecmp(player->currentLocation, "Crossroads") == 0) {
+            if (!checkProgressionFlag(player, FLAG_LEARNED_SHADOWS_BANE)) {
+                printf("Grizzik points a shaky finger upwards. 'See? The Evil Castle! That sparkly barrier... very zappy! No getting through there yet, no sir.'\n");
+            } else {
+                printf("Grizzik shivers, looking at the now open path to the Evil Castle. 'The way is open... Grizzik will wait here, if it's all the same to you, Great Arkhon. Yes, definitely wait here.'\n");
             }
         }
+    } else if (strcasecmp(npc->name, "Fiona") == 0) {
+        printf("Fiona adjusts her spectacles. 'If you wish to learn, I can teach you Flame_Spark or Shield_of_Dawn. Just say 'learn <spell_name>'.'\n");
+        if (checkProgressionFlag(player, FLAG_ASKED_FIONA_ABOUT_ARKHON)) {
+             printf("Fiona sighs, 'As I mentioned, the 'Sundering of Arkhon' tells of a great mage, his power, and a terrible division. The texts are ancient and fragmented, but they speak of two halves... forever locked.'\n");
+        } else {
+             printf("Fiona adds, 'You could also ask me about 'Arkhon' if you're curious about local legends or history.'\n");
+        }
+
     } else if (strcasecmp(npc->name, "Elder_Maris") == 0) {
-        printf("Elder Maris: 'Arkhon... a name whispered in legends. They say Arkhon's soul was split. One benevolent, one a blight. If you are who I think you are, a difficult path lies ahead.'\n");
-        // Set a lore flag if Maris reveals this
-        // setProgressionFlag(player, FLAG_LORE_ARKHON_SPLIT_MARIS);
+        if (checkProgressionFlag(player, FLAG_GROVE_COMPLETED_FOR_CAVERNS_QUEST) && 
+            !checkProgressionFlag(player, FLAG_CAVERNS_QUEST_GIVEN)) {
+            printf("Elder Maris looks at you with newfound respect. 'Brave Arkhon, your efforts in the Whispering Grove have brought a measure of peace to its troubled spirits. Word of your deeds travels swiftly.'\n");
+            printf("She continues, her voice lowering, 'A darker, more ancient place now calls for your attention, if you are willing. South of our village lie the Caverns of Echoes. Legends claim they hold secrets from before the Sundering, perhaps even a key to understanding the Blight that threatens us all. It is a perilous path, but your strength may be what is needed. The way should now be apparent to you from the village outskirts.'\n");
+            setProgressionFlag(player, FLAG_CAVERNS_QUEST_GIVEN);
+        } else if (checkProgressionFlag(player, FLAG_CAVERNS_QUEST_GIVEN)) {
+            printf("Elder Maris nods gravely. 'The Caverns of Echoes are a place of deep shadow and ancient sorrow. Tread carefully, Arkhon, for the echoes of the past can be as dangerous as any beast.'\n");
+        } else if (checkProgressionFlag(player, FLAG_MET_MARIS_FIRST_TIME)) {
+             printf("Elder Maris nods slowly. 'The currents of fate flow strangely. This village has seen much. If you seek to understand the shadows that gather, the Library of Elders holds some answers, and young Fiona there is its keeper. Some say a Blight taints the land, originating from the dark castle that looms over us.'\n");
+        } else {
+            printf("Elder Maris looks at you intently. 'Another lost soul finds their way to Eldermoor. What brings you to our humble village, stranger with an ancient air about you?'\n");
+            setProgressionFlag(player, FLAG_MET_MARIS_FIRST_TIME);
+        }
+    } else if (strcasecmp(npc->name, "Elara_the_Mystic") == 0) {
+        if (!checkProgressionFlag(player, FLAG_SHOPKEEPER_MET_FIRST_TIME)) {
+            printf("Elara smiles knowingly. 'Ah, a new face, yet an ancient soul. The path you walk is shrouded, Arkhon. Remember, even the smallest light can guide one through the deepest darkness. And sometimes, what is lost is not truly gone, merely waiting to be reawakened.'\n");
+            if (!checkProgressionFlag(player, FLAG_RECEIVED_SHOP_POTION)) {
+                printf("Elara holds out a small, faintly glowing vial. 'Take this Minor_Healing_Potion. The journey ahead may be perilous. May it serve you well.'\n");
+                addItemToInventory(player, "Minor_Healing_Potion"); // Directly add to inventory
+                setProgressionFlag(player, FLAG_RECEIVED_SHOP_POTION);
+                printf("(Minor_Healing_Potion added to your inventory! Type 'use Minor_Healing_Potion' to drink it.)\n");
+            }
+            setProgressionFlag(player, FLAG_SHOPKEEPER_MET_FIRST_TIME);
+        } else if (!checkProgressionFlag(player, FLAG_RECEIVED_SHOP_POTION)) {
+            // If they somehow missed the potion on first meet but met her.
+            printf("Elara nods. 'Back again? I sense you are still in need. Here.'\n");
+            printf("Elara offers you a Minor_Healing_Potion. 'May it aid your resilience.'\n");
+            addItemToInventory(player, "Minor_Healing_Potion");
+            setProgressionFlag(player, FLAG_RECEIVED_SHOP_POTION);
+            printf("(Minor_Healing_Potion added to your inventory! Type 'use Minor_Healing_Potion' to drink it.)\n");
+        } else {
+            printf("Elara: 'Seeker, the paths of destiny are ever-shifting. What guidance do you require now? Or perhaps you have items of interest to discuss?' (Further shop functionality to be implemented)\n");
+        }
     }
-    // Add other NPC specific dialogues
+
+    // Post-dialogue actions based on input might be handled in the main loop's "talk" command.
+    // For example, specific questions to Grizzik or Fiona.
+    // This function primarily delivers the NPC's current state-dependent greeting/main info.
 } 
