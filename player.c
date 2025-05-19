@@ -13,11 +13,10 @@ void initializePlayer(Player *player, const char *startLocation) {
     strncpy(player->currentLocation, startLocation, MAX_ITEM_NAME_LENGTH -1);
     player->currentLocation[MAX_ITEM_NAME_LENGTH - 1] = '\0';
 
-    // Clear spellbook
+    /* Initialize empty spellbook and inventory */
     for (int i = 0; i < MAX_SPELLS; ++i) {
         player->spellbook[i].name[0] = '\0';
     }
-    // Clear inventory
     for (int i = 0; i < MAX_INVENTORY_ITEMS; ++i) {
         player->inventory[i].name[0] = '\0';
     }
@@ -55,17 +54,17 @@ int hasSpell(const Player *player, const char *spellName) {
 
     for (int i = 0; i < player->learnedSpellCount; ++i) {
         if (strcmp(player->spellbook[i].name, spellName) == 0) {
-            return 1; // Player knows the spell
+            return 1; /* Player knows the spell */
         }
     }
-    return 0; // Player does not know the spell
+    return 0; /* Player does not know the spell */
 }
 
 void learnSpell(Player *player, const char *spellName) {
     if (player == NULL || spellName == NULL) return;
 
     if (player->learnedSpellCount < MAX_SPELLS) {
-        if (!hasSpell(player, spellName)) { // Check if spell already learned
+        if (!hasSpell(player, spellName)) { /* Check if spell already learned */
             strncpy(player->spellbook[player->learnedSpellCount].name, spellName, MAX_SPELL_NAME_LENGTH - 1);
             player->spellbook[player->learnedSpellCount].name[MAX_SPELL_NAME_LENGTH - 1] = '\0';
             player->learnedSpellCount++;
@@ -83,23 +82,22 @@ int hasItem(const Player *player, const char *itemName) {
 
     for (int i = 0; i < player->inventoryItemCount; ++i) {
         if (strcmp(player->inventory[i].name, itemName) == 0) {
-            return 1; // Player has the item
+            return 1; /* Player has the item */
         }
     }
-    return 0; // Player does not have the item
+    return 0; /* Player does not have the item */
 }
 
 void addItemToInventory(Player *player, const char *itemName) {
     if (player == NULL || itemName == NULL) return;
 
     if (player->inventoryItemCount < MAX_INVENTORY_ITEMS) {
-        if (!hasItem(player, itemName)) { // Check if item already in inventory (optional)
+        if (!hasItem(player, itemName)) { /* Check if item already in inventory */
             strncpy(player->inventory[player->inventoryItemCount].name, itemName, MAX_ITEM_NAME_LENGTH - 1);
             player->inventory[player->inventoryItemCount].name[MAX_ITEM_NAME_LENGTH - 1] = '\0';
             player->inventoryItemCount++;
             printf("%s has been added to your inventory.\n", itemName);
         } else {
-            // Or, if items can stack, you might increment a quantity instead
             printf("You already have %s.\n", itemName);
         }
     } else {
@@ -115,7 +113,7 @@ void takeDamage(Player *player, int damageAmount) {
     if (player->currentHp <= 0) {
         player->currentHp = 0;
         printf("Your vision fades... You have fallen.\n");
-        // Game over logic will be handled in the main game loop
+        /* Game over logic handled in the main game loop */
     }
 }
 

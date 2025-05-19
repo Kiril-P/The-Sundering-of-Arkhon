@@ -1,3 +1,11 @@
+/* 
+ * This file implements the game world functionality, including:
+ * - Locations and their connections
+ * - NPCs and their dialogues
+ * - World exploration and interaction logic
+ * - Quest and progression handling
+ */
+
 #include "world.h"
 #include "player.h" // For Player struct and progression flags
 #include "combat.h" // For Enemy struct, getEnemyByName, startCombat

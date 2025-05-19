@@ -1,10 +1,10 @@
 #ifndef COMBAT_H
 #define COMBAT_H
 
-#include "player.h" // Needs player data
+#include "player.h"
 
 #define MAX_ENEMY_NAME_LENGTH 50
-#define MAX_ENEMY_SPELLS 5 // If enemies can cast spells
+#define MAX_ENEMY_SPELLS 5
 
 // Forward declaration from player.h if not directly included, or ensure player.h is included before combat.h where used
 // typedef struct Player Player;
@@ -22,42 +22,25 @@ typedef struct Enemy {
     // Add flags for special abilities, resistances, weaknesses etc.
 } Enemy;
 
-// Function Prototypes
+/* Function Prototypes */
 
-/**
- * @brief Initiates and manages a combat encounter between the player and an enemy.
- * 
- * @param player Pointer to the player struct.
- * @param enemy Pointer to the enemy struct for this encounter.
- * @return Returns 1 if player wins, 0 if player flees, -1 if player loses.
- */
+/* Handles combat between player and enemy
+ * Returns: 1=win, 0=flee, -1=loss */
 int startCombat(Player *player, Enemy *enemy);
 
-/**
- * @brief Creates and returns an enemy instance by name.
- * This will be used to spawn enemies for encounters.
- * 
- * @param enemyName The name of the enemy type to create.
- * @param targetEnemy Pointer to an Enemy struct to populate.
- * @return Returns 1 if enemy was successfully created, 0 otherwise.
- */
+/* Creates an enemy instance based on name 
+ * Returns: 1=success, 0=failure */
 int getEnemyByName(const char *enemyName, Enemy *targetEnemy);
 
-/**
- * @brief Initiates and manages the unique final boss battle with Arkhon the Blight.
- * This function implements the special timed spellcasting mechanics.
- * 
- * @param player Pointer to the player struct.
- * @param boss Pointer to the Arkhon the Blight enemy struct.
- * @return Returns 1 if player wins, -1 if player loses. (Fleeing is not an option)
- */
+/* Manages the final boss battle with special mechanics
+ * Returns: 1=win, -1=loss (no fleeing allowed) */
 int startFinalBossBattle(Player *player, Enemy *boss);
 
-// Utility for timed spell casting
+/* Implements timed spell casting mechanic */
 int castSpellTimed(const char *correctSpell, int timeLimitSeconds);
 
 // Specific spell effect functions (can be expanded)
 // void applyFlameSpark(Player *caster, Enemy *target);
 // void applyShieldOfDawn(Player *caster);
 
-#endif // COMBAT_H 
+#endif /* COMBAT_H */ 

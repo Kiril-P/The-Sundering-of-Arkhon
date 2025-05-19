@@ -6,7 +6,7 @@
 #define MAX_INVENTORY_ITEMS 10
 #define MAX_ITEM_NAME_LENGTH 50
 
-// Progression Flags (can be expanded)
+/* Progression Flags for tracking game state */
 #define FLAG_STAFF_RETRIEVED 1
 #define FLAG_GRIZZIK_MET 2
 #define FLAG_LEARNED_FLAME_SPARK 4
@@ -31,17 +31,13 @@
 #define FLAG_CAVERNS_QUEST_GIVEN 4194304 // Caverns of Echoes quest/info has been given
 #define FLAG_GRIZZIK_TALK_SUGGESTED 8388608 // Player has been prompted to talk to Grizzik
 #define FLAG_GROVE_HEALING_RECEIVED 16777216 // Player has received the one-time heal in Whispering Grove
-// ... add more flags for lore points, quest completions, etc.
-
 
 typedef struct {
     char name[MAX_SPELL_NAME_LENGTH];
-    // Add other spell properties if needed, e.g., damage, type (offense/defense)
 } Spell;
 
 typedef struct {
     char name[MAX_ITEM_NAME_LENGTH];
-    // Add other item properties, e.g., description, effect
 } Item;
 
 typedef struct Player {
@@ -51,11 +47,11 @@ typedef struct Player {
     int learnedSpellCount;
     Item inventory[MAX_INVENTORY_ITEMS];
     int inventoryItemCount;
-    unsigned int progressionFlags; // Using unsigned int for bitmasking flags
-    char currentLocation[MAX_ITEM_NAME_LENGTH]; // To store player's current location
+    unsigned int progressionFlags;
+    char currentLocation[MAX_ITEM_NAME_LENGTH];
 } Player;
 
-// Function prototypes
+/* Player function prototypes */
 void initializePlayer(Player *player, const char *startLocation);
 void displayPlayerStatus(const Player *player);
 int hasSpell(const Player *player, const char *spellName);
@@ -67,4 +63,4 @@ void healPlayer(Player *player, int healAmount);
 int checkProgressionFlag(const Player *player, unsigned int flag);
 void setProgressionFlag(Player *player, unsigned int flag);
 
-#endif // PLAYER_H 
+#endif /* PLAYER_H */ 

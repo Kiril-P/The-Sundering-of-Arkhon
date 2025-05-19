@@ -2,43 +2,39 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
-#include <strings.h> // For strcasecmp
+#include <strings.h> /* For strcasecmp */
 
 #include "player.h"
 #include "world.h"
-#include "combat.h" // Include combat header
+#include "combat.h"
 
-// Enemy struct is now in combat.h
-// Function prototypes for functions still in main.c
+/* Function prototypes */
 void gameStartNarration(Player *player);
 
-// --- Main Game Loop ---
+/* Main Game Loop */
 int main() {
     srand(time(NULL));
 
     Player player;
-    initializePlayer(&player, "Dungeon_of_Awakening"); // Initial location from world.c logic
-    initializeWorld(); // Initialize all locations and NPCs
+    initializePlayer(&player, "Dungeon_of_Awakening");
+    initializeWorld();
 
     printf("Welcome to Arkhon's Awakening!\n");
     printf("------------------------------------\n\n");
 
     gameStartNarration(&player);
-    processExplore(&player, player.currentLocation); // Describe the starting location
+    processExplore(&player, player.currentLocation);
 
     char choice[100];
     while (player.currentHp > 0) {
         printf("\nLocation: %s | HP: %d/%d\n", player.currentLocation, player.currentHp, player.maxHp);
         printf("What would you like to do next? (type 'help' for commands)\n> ");
         fgets(choice, sizeof(choice), stdin);
-        choice[strcspn(choice, "\n")] = 0; // Remove newline character
+        choice[strcspn(choice, "\n")] = 0; /* Remove newline character */
 
-        if (strlen(choice) == 0) { // Handle empty input
+        if (strlen(choice) == 0) { /* Handle empty input */
             continue;
         }
-
-        // Normalize to lowercase for command processing if desired, or use strcasecmp for specific commands
-        // For simplicity, using strcasecmp for some known commands and strncmp for prefix commands.
 
         if (strcasecmp(choice, "quit") == 0) {
             printf("Exiting Arkhon's Awakening. Farewell!\n");
@@ -54,23 +50,23 @@ int main() {
             printf("  inventory               - Check your items.\n");
             printf("  get <item_name>         - Pick up an item.\n");
             printf("  read lore               - Read lore available in the current location.\n");
-            printf("  examine symbols         - Focus on peculiar symbols (context-dependent, e.g., Caverns_of_Echoes).\n");
+            printf("  examine symbols         - Focus on peculiar symbols (context-dependent).\n");
             printf("  meditate                - Alias for 'examine symbols'.\n");
-            printf("  test combat <enemy_name> - Initiate a test combat (e.g., test combat Goblin_Scout).\n");
+            printf("  test combat <enemy_name> - Initiate a test combat.\n");
             printf("  use <item_name>         - Use an item.\n");
             printf("  quit                    - Exit the game.\n");
         } else if (strncasecmp(choice, "explore ", 8) == 0) {
             char locationToExplore[MAX_LOCATION_NAME_LENGTH];
-            if (sscanf(choice + 8, "%49s", locationToExplore) == 1) { // Skip "explore "
+            if (sscanf(choice + 8, "%49s", locationToExplore) == 1) {
                  processExplore(&player, locationToExplore);
             } else {
                 printf("Explore where? (e.g., explore Crossroads). Check available exits.\n");
             }
         } else if (strcasecmp(choice, "look around") == 0) {
-            processExplore(&player, player.currentLocation); // Re-describe current location using world module
+            processExplore(&player, player.currentLocation);
         } else if (strncasecmp(choice, "talk ", 5) == 0) {
             char characterToTalk[MAX_NPC_NAME_LENGTH];
-            if (sscanf(choice + 5, "%49s", characterToTalk) == 1) { // Skip "talk "
+            if (sscanf(choice + 5, "%49s", characterToTalk) == 1) {
                 processTalk(&player, characterToTalk);
             } else {
                 printf("Talk to whom? (e.g., talk Grizzik)\n");
@@ -81,25 +77,15 @@ int main() {
                  printf("You attempt to cast %s...\n", spellToCast);
                  if(hasSpell(&player, spellToCast)){
                     printf("You feel the magical energies stir. The spell is ready, awaiting a purpose or target.\n");
-                    // Actual spell effects will be tied to combat or specific interactions.
-                    // For example, Shadow's Bane might be cast on the Evil_Castle forcefield if player is at Crossroads
+                    
+                    /* Handle special case - dispelling forcefield */
                     if (strcasecmp(player.currentLocation, "Crossroads") == 0 && 
                         strcasecmp(spellToCast, "Shadows_Bane") == 0 && 
                         hasSpell(&player, "Shadows_Bane") && 
-                        !checkProgressionFlag(&player, FLAG_LEARNED_SHADOWS_BANE)) { // FLAG_LEARNED_SHADOWS_BANE indicates it was already used here or learned status
-                        // This is a bit of a hack. Ideally, Shadow's Bane has a specific target (the forcefield)
-                        // For now, we assume casting it at the crossroads if you know it implies targeting the forcefield.
-                        // The game documents state Shadow's Bane dispels the forcefield. It doesn't say *how* it's targeted.
+                        !checkProgressionFlag(&player, FLAG_LEARNED_SHADOWS_BANE)) {
+                        
                         printf("You channel the energies of Shadow's Bane towards the shimmering forcefield...\n");
-                        // The GameFlow states: "Spell Shadow's Bane (Dispels forcefield around Evil Castle)"
-                        // It is learned from Caverns of Echoes.
-                        // We need a flag to say the forcefield is down. The FLAG_LEARNED_SHADOWS_BANE is for knowing the spell.
-                        // Let's use a new flag or repurpose one carefully. The check in processExplore uses FLAG_LEARNED_SHADOWS_BANE.
-                        // This implies learning it IS using it, or it auto-dispels. Let's stick to the existing flag for now.
-                        // The visual change is handled by processExplore when re-entering Crossroads.
                         printf("A dark pulse emanates from your staff, and the forcefield around the Evil Castle wavers violently before vanishing with a pop!\n");
-                        // setProgressionFlag(&player, FLAG_FORCEFIELD_DOWN); // A dedicated flag might be cleaner.
-                        // For now, processExplore at Crossroads checks FLAG_LEARNED_SHADOWS_BANE to describe the state.
                     }
 
                  } else {
@@ -114,7 +100,7 @@ int main() {
             displayPlayerStatus(&player);
         } else if (strncasecmp(choice, "get ", 4) == 0) {
             char itemToGet[MAX_ITEM_NAME_LENGTH];
-            if (sscanf(choice + 4, "%49s", itemToGet) == 1) { // Skip "get "
+            if (sscanf(choice + 4, "%49s", itemToGet) == 1) {
                 if (strcasecmp(player.currentLocation, "Dungeon_of_Awakening") == 0 && strcasecmp(itemToGet, "Mage_Staff") == 0) {
                     if (!hasItem(&player, "Mage_Staff")) {
                         addItemToInventory(&player, "Mage_Staff");
@@ -131,7 +117,7 @@ int main() {
                     } else if (checkProgressionFlag(&player, FLAG_DIREFANG_PENDANT_COLLECTED)) {
                         printf("You already have the Direfang_Pendant.\n");
                     } else {
-                        printf("You don't see any Direfang_Pendant here right now.\n"); // Spider not defeated or pendant not made visible
+                        printf("You don't see any Direfang_Pendant here right now.\n");
                     }
                 } else {
                     printf("You can't seem to get '%s' here, or it doesn't exist.\n", itemToGet);
@@ -141,9 +127,9 @@ int main() {
             }
         } else if (strncasecmp(choice, "learn ", 6) == 0) {
             char spellToLearn[MAX_SPELL_NAME_LENGTH];
-            if (sscanf(choice + 6, "%49s", spellToLearn) == 1) { // Skip "learn "
+            if (sscanf(choice + 6, "%49s", spellToLearn) == 1) {
                 if (strcasecmp(player.currentLocation, "Library_of_Elders") == 0) {
-                    const NPC* fiona = getNPCData("Fiona"); // Check if Fiona is there
+                    const NPC* fiona = getNPCData("Fiona");
                     if (fiona && strcasecmp(fiona->currentLocation, player.currentLocation) == 0) {
                         if (strcasecmp(spellToLearn, "Flame_Spark") == 0) {
                             if (!hasSpell(&player, "Flame_Spark")) {
@@ -224,7 +210,6 @@ int main() {
                         setProgressionFlag(&player, FLAG_CAVERNS_PUZZLE_SOLVED);
                         printf("The knowledge of 'Shadows_Bane' (Incantation: Umbra Mortis) sears into your mind! This spell can dispel dark barriers.\n");
                         printf("CRITICAL LORE: The voice continues, 'You are Arkhon, but not whole. The Blight you hunt is the other half of your sundered soul, sealed away long ago by your own hand, an act of desperation to save the world... and yourself. To truly end the cycle, the souls must be one.'\n");
-                        // After learning, re-describe the location to reflect the change
                         processExplore(&player, player.currentLocation);
                     } else if (strcmp(puzzleChoice, "1") == 0 || strcmp(puzzleChoice, "2") == 0) {
                         printf("Voice: 'A partial truth... The path remains clouded.' The symbols fade slightly, offering no further enlightenment now.\n");
@@ -246,24 +231,11 @@ int main() {
             }
         } else if (strncasecmp(choice, "use ", 4) == 0) {
             char itemToUse[MAX_ITEM_NAME_LENGTH];
-            if (sscanf(choice + 4, "%49s", itemToUse) == 1) { // Skip "use "
+            if (sscanf(choice + 4, "%49s", itemToUse) == 1) {
                 if (strcasecmp(itemToUse, "Minor_Healing_Potion") == 0) {
                     if (hasItem(&player, "Minor_Healing_Potion")) {
-                        // Remove item from inventory - this function needs to be created in player.c
-                        // removeItemFromInventory(player, "Minor_Healing_Potion"); 
-                        // For now, let's assume potions are one-use and we don't have stacking or quantity.
-                        // A more robust inventory would handle removing one charge or one item.
-                        // We'll just note its use and prevent re-use of the *same* single gifted potion for now
-                        // by checking a flag or by actually removing it if removeItemFromInventory existed.
-                        // Since removeItemFromInventory is not there, let's consume it conceptually.
-                        // To prevent re-using the *exact same instance* if not removed, we might need another flag.
-                        // However, player.c has addItemToInventory, but not remove. For simplicity, let's assume it's consumed.
-                        
-                        healPlayer(&player, 75); // healPlayer function is in player.c
+                        healPlayer(&player, 75);
                         printf("You drink the Minor_Healing_Potion. A warm energy spreads through you, mending some of your wounds. (HP +25)\n");
-                        // To make it truly one-use without a remove function, we'd need to manage its presence more carefully.
-                        // For now, the spirit of the request is to use it. If the player somehow gets another, they can use that too.
-                        // The FLAG_RECEIVED_SHOP_POTION just prevents getting more free ones from Elara.
                     } else {
                         printf("You don't have a Minor_Healing_Potion to use.\n");
                     }
@@ -278,18 +250,10 @@ int main() {
         }
     }
 
-    if (player.currentHp <= 0 && strcmp(choice, "quit") != 0) {
-        // Death message is handled in takeDamage in player.c, but ensure loop terminates
-    }
-
     return 0;
 }
 
 void gameStartNarration(Player *player) {
     printf("You awaken in a dimly lit chamber, your head throbbing. You have no memory of who you are or how you got here.\n");
-    // Grizzik's introduction is now handled by his presence in the Dungeon_of_Awakening (world.c) when explored.
-    // And his dialogue via processTalk.
-    setProgressionFlag(player, FLAG_GRIZZIK_MET); // Assume Grizzik is met immediately.
-}
-
-// Remove old castSpell and handleCombat definitions from here if they exist. 
+    setProgressionFlag(player, FLAG_GRIZZIK_MET);
+} 
