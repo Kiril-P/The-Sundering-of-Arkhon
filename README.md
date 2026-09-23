@@ -1,38 +1,75 @@
-# Arkhon
+# The Sundering of Arkhon
 
-Arkhon is a C-based game project. This repository contains the source code, design documents, and build instructions for the game.
+Wake without your memories, learn spells, and uncover the source of a spreading blight in a terminal fantasy adventure written in C.
 
-## Project Structure
-- `main.c` - Main entry point for the game
-- `combat.c`, `combat.h` - Combat system implementation
-- `player.c`, `player.h` - Player logic and data structures
-- `world.c`, `world.h` - World and environment logic
-- `Makefile` - Build instructions
-- `GameFlow` - Game flow documentation
-- `GameDesingDocument` - Game design document
+The game welcomes you as **Arkhon's Awakening**. Built for a programming class, it combines exploration, NPC conversations, inventory, puzzles, and turn-based combat through typed commands.
 
-## Building the Game
+```text
+Welcome to Arkhon's Awakening!
+------------------------------------
 
-To build the game, ensure you have `gcc` installed, then run:
+You awaken in a dimly lit chamber, your head throbbing.
+You have no memory of who you are or how you got here.
 
-```sh
-make
+~ Dungeon_of_Awakening ~
+You see: Grizzik
+Exits: Crossroads
+
+Location: Dungeon_of_Awakening | HP: 100/100
+What would you like to do next? (type 'help' for commands)
+>
 ```
 
-This will compile the source files and produce the game executable.
+*Excerpt from an actual run; introductory description shortened for readability.*
 
-## Running the Game
+## Play
 
-After building, run the executable (replace `arkhons_awakening` with the actual output name if different):
+You need a C compiler and Make. From the repository root:
 
 ```sh
+make -B
 ./arkhons_awakening
 ```
 
-## Contributing
+`make -B` rebuilds from source instead of reusing the prebuilt executable and object files currently tracked in the repository. Those artifacts are macOS ARM64; rebuilding produces a binary for your own environment. The source uses POSIX `strings.h` functions, so use a Unix-like environment such as macOS, Linux, or WSL.
 
-Feel free to fork the repository and submit pull requests.
+Try this opening sequence:
 
-## License
+```text
+talk Grizzik
+get Mage_Staff
+read lore
+explore Crossroads
+```
 
-This project is open source. See the LICENSE file for details (if available). 
+Type location, character, spell, and item names as shown by the game, including underscores.
+
+## Commands
+
+| Command | Action |
+| --- | --- |
+| `help` | Show the available commands |
+| `look around` | Examine your current location |
+| `explore <location_name>` | Move to an adjacent known location |
+| `talk <character_name>` | Speak with an NPC |
+| `get <item_name>` / `use <item_name>` | Pick up or use an item |
+| `inventory` / `status` | Inspect items, health, and learned spells |
+| `learn <spell_name>` / `cast <spell_name>` | Learn or cast a spell where the context allows it |
+| `read lore` | Read the location's lore |
+| `examine symbols` / `meditate` | Investigate context-specific symbols |
+| `quit` | Exit the game |
+
+Combat presents its own choices. The help menu also exposes `test combat <enemy_name>` for development testing.
+
+## Explore the source
+
+| File | Responsibility |
+| --- | --- |
+| [`main.c`](main.c) | Opening narrative and command loop |
+| [`world.c`](world.c), [`world.h`](world.h) | Locations, NPCs, exploration, and story interactions |
+| [`player.c`](player.c), [`player.h`](player.h) | Player state, inventory, and spells |
+| [`combat.c`](combat.c), [`combat.h`](combat.h) | Combat encounters and choices |
+| [`Makefile`](Makefile) | C11 build with compiler warnings enabled |
+| [`GameFlow`](GameFlow), [`GameDesingDocument`](GameDesingDocument) | Original flow and design notes |
+
+The source was compiled with `-Wall -Wextra -std=c11` and checked through a help-and-quit run on macOS. This is a coursework project; that smoke check is not a full playthrough of every story branch.
